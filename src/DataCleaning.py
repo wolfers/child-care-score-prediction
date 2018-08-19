@@ -2,6 +2,11 @@ import numpy as np
 import pandas as pd
 
 def drop_text_cols(df, drop_cols_list):
+    '''
+    Takes a DataFrame and a list of columns to drop
+    returns DataFrame with all columns dropped and 
+    also drops any columns containing text
+    '''
     df = df.drop(drop_cols_list, axis=1).copy()
     for col in df.columns:
         if "Feedback for Provider" in col or "Notes" in col or "FB for Provider" in col:
@@ -9,6 +14,9 @@ def drop_text_cols(df, drop_cols_list):
     return df
 
 def remove_useless_cols(df):
+    '''
+    removes any columns that contain only 0s from a dataframe
+    '''
     for col in df.columns:
         if list(df[col].unique()) == [0]:
             df = df.drop(col, axis=1).copy()
@@ -58,3 +66,4 @@ class CleanClassCCQB():
         #create columns for missing values
         #fill NaNs with averages
         return df
+
