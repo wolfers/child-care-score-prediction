@@ -68,7 +68,8 @@ def fill_nans(df):
 
 def combine_df(df1, df2):
     '''
-    
+    combines DataFrames together for use in 
+    cleaning the ccqb data
     '''
     record_type = get_record_types(df2)
     df2 = take_earliest_date(df2)
@@ -87,6 +88,16 @@ def create_nan_dummies(df):
     for col in df.columns:
         df[col+'_nan'] = pd.isnull(df[col])
     return df.copy()
+
+def get_dummy_dict(df, dummy_list):
+    '''
+    create a dict whos keys are columns that will eb converted to dummies
+    values are the possible values of that column
+    '''
+    dummy_dict = {}
+    for col in dummy_list:
+        dummy_dict[col] = df[col].unique()
+    return dummy_dict
 
 class CleanClassCCQB():
     def __init__(self):
@@ -148,8 +159,10 @@ class CleanErs():
         #list used when seperating things during the cleaning of the ccqb data
         self._sep_list = ['Provider: Region', 'Provider: Type of Care', 'Touchpoint: Record Type', 'Date']
         self._ccqb_col_avg_dict = {}
+        self.dummy_dict = {}
 
     def _clean_ers_ccqb(self, df_ers):
+        self.dummy_dict = get_dummy_dict(df_ers, self._dummy_cols)
         ers_df_test = drop_text_cols(df_ers, self._drop_cols)
         #data contains some messy columns at the end with no data, this is only for those.
         ers_df_test = ers_df_test.drop([2939, 2940, 2941, 2942, 2943, 2944, 2945])
