@@ -23,6 +23,10 @@ def remove_useless_cols(df):
     return df
 
 def separate_df(df, sep_list):
+    '''
+    seperate the DataFrame into two seperate DataFrame using the dep_list
+    The intention is to use one for finding the averages and filling the nans in those columns
+    '''
     df = df.sort_values('Coded ID').copy()
     df2 = pd.DataFrame(df['Coded ID'])
     for col in df.columns[1:]:
@@ -34,28 +38,40 @@ def separate_df(df, sep_list):
 def average_values(df):
     return df.groupby('Coded ID').mean()
 
-def take_latest_date(df):
+def take_earliest_date(df):
+    '''
+    takes the first date that data was entered for the provider
+    '''
     rows = []
     for _, group in df.groupby('Coded ID'):
         rows.append(group.sort_values('Date').iloc[0])
     return pd.DataFrame(rows)
 
 def get_record_types(df):
-    #make a dummy if a groupby contians values
+    '''
+    make a dummy if a groupby contians values
+    '''
     df = pd.get_dummies(df[['Coded ID', 'Touchpoint: Record Type']],
                    dummy_na=True, columns=['Touchpoint: Record Type'])
     return df.groupby('Coded ID').max()
 
 def fill_nans(df):
+    '''
+    Find the average of each column and then fill the NaNs with the average
+    '''
     col_avg_dict = {}
     for col in df.columns:
         avg = df[col].mean()
         col_avg_dict[col] = avg
+    df = create_nan_dummies(df)
     return df.fillna(col_avg_dict), col_avg_dict
 
 def combine_df(df1, df2):
+    '''
+    
+    '''
     record_type = get_record_types(df2)
-    df2 = take_latest_date(df2)
+    df2 = take_earliest_date(df2)
     df2 = df2.drop('Touchpoint: Record Type', axis=1)
     df2.set_index('Coded ID', inplace=True)
     for col in df1:
@@ -63,6 +79,14 @@ def combine_df(df1, df2):
     for col in record_type:
         df2[col] = record_type[col]
     return df2
+
+def create_nan_dummies(df):
+    '''
+    create dummy columns for NaN values
+    '''
+    for col in df.columns:
+        df[col+'_nan'] = pd.isnull(df[col])
+    return df.copy()
 
 class CleanClassCCQB():
     def __init__(self):
@@ -127,6 +151,7 @@ class CleanErs():
 
     def _clean_ers_ccqb(self, df_ers):
         ers_df_test = drop_text_cols(df_ers, self._drop_cols)
+        #data contains some messy columns at the end with no data, this is only for those.
         ers_df_test = ers_df_test.drop([2939, 2940, 2941, 2942, 2943, 2944, 2945])
         ers_avg, ers_not_avg = separate_df(ers_df_test, self._sep_list)
         ers_avg = average_values(ers_avg)
