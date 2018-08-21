@@ -74,6 +74,7 @@ def create_record_cols(df):
     record_type = get_record_types(df)
     for col in record_type:
         df[col] = record_type[col]
+    df = df.drop('Touchpoint: Record Type', axis=1)
     return df
 
 def combine_df(df1, df2, train=True):
@@ -83,7 +84,7 @@ def combine_df(df1, df2, train=True):
     '''
     if train == True:
         df2 = take_earliest_date(df2)
-    df2 = df2.drop('Touchpoint: Record Type', axis=1)
+
     df2.set_index('Coded ID', inplace=True)
     for col in df1:
         df2[col] = df1[col]
@@ -109,11 +110,12 @@ def get_dummy_dict(df, dummy_list):
 
 def make_dummies(df, dummy_dict):
     for key, value in dummy_dict:
+        convert_list = []
         for column in value:
-            if df[key] == value:
-                convert_list.append({'_'.join(key, value): 1})
+            if df[key] == column:
+                convert_list.append({'_'.join(key, column): 1})
             else:
-                convert_list.append({"_".join(key, value): 0})
+                convert_list.append({"_".join(key, column): 0})
         temp_df = pd.DataFrame(convert_list)
         for col in temp_df:
             df[col] = temp_df[col]
@@ -177,7 +179,7 @@ class CleanErs():
         self._drop_cols = ['Identifier','Touchpoint: Owner Name',
                           'Provider: Assigned Staff', 'Touchpoint: Created Date',
                           'Touchpoint: Created By', 'Room Observed', 'Touchpoint: ID']
-        self._dummy_cols = ['Provider: Region', 'Provider: Type of Care', 'Touchpoint: Record Type']
+        self._dummy_cols = ['Provider: Region', 'Provider: Type of Care']
         #list used when seperating things during the cleaning of the ccqb data
         self._sep_list = ['Provider: Region', 'Provider: Type of Care', 'Touchpoint: Record Type', 'Date']
         self._ccqb_col_avg_dict = {}
@@ -192,15 +194,15 @@ class CleanErs():
         df_avg, df_not_avg = separate_df(df, self._sep_list)
         df_avg = average_values(df_avg)
         df_no_nans, self._ccqb_col_avg_dict = fill_nans_train(df_avg)
+        df_not_avg = create_record_cols(df_not_avg)
         df = combine_df(df_no_nans, df_not_avg)
-        df = create_record_cols(df)
         df = self._convert_scored_to_binary(df)
         df = pd.get_dummies(df, columns=self._dummy_cols)
         return df
     
-    def clean_ers_scores(self, df1, df2):
-        df1.set_index('Assessment Id', inplace=True)
-        df2.set_index('Assessment Id', inplace=True)
+    def _clean_ers_scores(self, df1, df2):
+        df1 = df1.set_index('Assessment Id')
+        df2 = df2.set_index('Assessment Id')
         df = pd.concat([df1, df2], 1, 'inner')
         df = df.drop(self._scores_drop, axis=1)
         rows = []
@@ -211,7 +213,7 @@ class CleanErs():
         df_means = pd.DataFrame(df['Date'])
         df = df.drop('Date', axis=1)
         df_means['mean'] = df.mean(axis=1)   
-        return df
+        return df_means
 
     def _convert_scored_to_binary(self, df):
         '''
@@ -231,10 +233,10 @@ class CleanErs():
         returns X and y
        '''
         clean_ccqb_df = self._clean_ers_ccqb(df_ccqb)
-        clean_scores_df = self.clean_ers_scores(df_scores1, df_scores2)
-        df = pd.concat([test, df_means], 1, 'inner')
+        clean_scores_df = self._clean_ers_scores(df_scores1, df_scores2)
+        df = pd.concat([clean_ccqb_df, clean_scores_df], 1, 'inner')
         df = df.drop('Date', axis=1)
-        return df.drop('mean', axis=1), df['mean']
+        return df.drop('mean', axis=1), df['mean'].values
 
     def transform(self, df):
         '''
@@ -250,5 +252,5 @@ class CleanErs():
         df = combine_df(df_no_nans, df_not_avg)
         df = self._convert_scored_to_binary(df)
         #create dummy columns based on what already exsists
-        df = make_dummies(df, self.dummy_dict)
+        df = make_dummies(df, self.dummy_dict.append('Touchpoint: Record Type'))
         return df
