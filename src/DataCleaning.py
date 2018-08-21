@@ -55,7 +55,7 @@ def get_record_types(df):
                    dummy_na=True, columns=['Touchpoint: Record Type'])
     return df.groupby('Coded ID').max()
 
-def fill_nans(df):
+def fill_nans_train(df):
     '''
     Find the average of each column and then fill the NaNs with the average
     '''
@@ -65,6 +65,10 @@ def fill_nans(df):
         col_avg_dict[col] = avg
     df = create_nan_dummies(df)
     return df.fillna(col_avg_dict), col_avg_dict
+
+def fill_nans_input(df, col_avg_dict):
+    df = create_nan_dummies(df)
+    return df.fillna(col_avg_dict)
 
 def create_record_cols(df, dict=None):
     if dict == None:
@@ -182,12 +186,11 @@ class CleanErs():
         df = df.drop([2939, 2940, 2941, 2942, 2943, 2944, 2945])
         df_avg, df_not_avg = separate_df(df, self._sep_list)
         df_avg = average_values(df_avg)
-        df_no_nans, self._ccqb_col_avg_dict = fill_nans(df_avg)
+        df_no_nans, self._ccqb_col_avg_dict = fill_nans_train(df_avg)
         df = combine_df(df_no_nans, df_not_avg)
         df = create_record_cols(df)
         df = self._convert_scored_to_binary(df)
         df = pd.get_dummies(df, columns=self._dummy_cols)
-        #df = remove_useless_cols(df)
         return df
     
 
@@ -215,18 +218,17 @@ class CleanErs():
     def transform(self, df):
         '''
         take in a DataFrame and return
-        a ready to use df for a model prediction
-        must have already fir the calss on some data to transform
+        a ready to use DataFrame for a model prediction
+        must have already fit the class on some data to transform
         '''
         df = drop_text_cols(df, self._drop_cols)
         df_avg, df_not_avg = separate_df(df, self._sep_list)
         df_avg = average_values(df_avg)
         #fillnans using saved average
-        #ers_no_nans, self._ccqb_col_avg_dict = fill_nans(df_avg)
+        df_no_nans = fill_nans_input(df, self._ccqb_col_avg_dict)
         df = combine_df(df_no_nans, df_not_avg)
         df = create_record_cols(df, self.dummy_dict)
         df = self._convert_scored_to_binary(df)
         #create dummy columns based on waht already exsists
         #df = pd.get_dummies(df, dummy_na=True, columns=self._dummy_cols)
-        df = remove_useless_cols(df)
-        return ers_df_test
+        return df
