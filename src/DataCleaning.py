@@ -173,6 +173,7 @@ class CleanClassCCQB():
 
 class CleanErs():
     def __init__(self):
+        self._scores_drop = ['Assessment', 'Site Region', 'Assessment Phase Name']
         self._drop_cols = ['Identifier','Touchpoint: Owner Name',
                           'Provider: Assigned Staff', 'Touchpoint: Created Date',
                           'Touchpoint: Created By', 'Room Observed', 'Touchpoint: ID']
@@ -181,6 +182,7 @@ class CleanErs():
         self._sep_list = ['Provider: Region', 'Provider: Type of Care', 'Touchpoint: Record Type', 'Date']
         self._ccqb_col_avg_dict = {}
         self.dummy_dict = {}
+        self._scores_drop = ['Assessment', 'Site Region', 'Assessment Phase Name']
 
     def _clean_ers_ccqb(self, df_ers):
         self.dummy_dict = get_dummy_dict(df_ers, self._dummy_cols)
@@ -196,6 +198,20 @@ class CleanErs():
         df = pd.get_dummies(df, columns=self._dummy_cols)
         return df
     
+    def clean_ers_scores(self, df1, df2):
+        df1.set_index('Assessment Id', inplace=True)
+        df2.set_index('Assessment Id', inplace=True)
+        df = pd.concat([df1, df2], 1, 'inner')
+        df = df.drop(self._scores_drop, axis=1)
+        rows = []
+        for _, group in df.groupby('Coded Provider ID'):
+            rows.append(group.sort_values('Date').iloc[0])
+        df = pd.DataFrame(rows)
+        df.set_index('Coded Provider ID', inplace=True)
+        df_means = pd.DataFrame(df['Date'])
+        df = df.drop('Date', axis=1)
+        df_means['mean'] = df.mean(axis=1)   
+        return df
 
     def _convert_scored_to_binary(self, df):
         '''
@@ -208,15 +224,17 @@ class CleanErs():
                 df[col] = df[col].eq('Yes').mul(1)
         return df
 
-    def fit_transform_train(self, df_ccqb, df_scores):
+    def fit_transform_train(self, df_ccqb, df_scores1, df_scores2):
         '''
         Take in ERS data as pandas DataFrames
         record averages for columns
-        and then return a transformed DataFrame ready to be
-        put into a model.
-        '''
-        clean_ccqb_db = self._clean_ers_ccqb(df_ccqb)
-        return clean_ccqb_db
+        returns X and y
+       '''
+        clean_ccqb_df = self._clean_ers_ccqb(df_ccqb)
+        clean_scores_df = self.clean_ers_scores(df_scores1, df_scores2)
+        df = pd.concat([test, df_means], 1, 'inner')
+        df = df.drop('Date', axis=1)
+        return df.drop('mean', axis=1), df['mean']
 
     def transform(self, df):
         '''
