@@ -186,7 +186,7 @@ class CleanErs():
         self.dummy_dict = {}
         self._scores_drop = ['Assessment', 'Site Region', 'Assessment Phase Name']
 
-    def _combine_ers_dfs(df_ccqb, df_scores):
+    def _combine_ers_dfs(self, df_ccqb, df_scores):
         df = pd.concat([df_ccqb, df_scores], 1, 'inner')
         df['Date_means'] = pd.to_datetime(df['Date_means'])
         df['Date'] = pd.to_datetime(df['Date'])
@@ -208,13 +208,15 @@ class CleanErs():
         df = pd.get_dummies(df, columns=self._dummy_cols)
         return df
     
-    def clean_ers_scores(df, df_scores1, df_scores2):
+    def _clean_ers_scores(self, df_scores1, df_scores2):
+        df_scores1 = df_scores1.set_index('Assessment Id')
+        df_scores2 = df_scores2.set_index('Assessment Id')
         df = pd.concat([df_scores1, df_scores2], 1, 'inner')
         for name, group in df.groupby('Assessment Phase Name'):
             if name == 'Initial Rating':
                 df = group
                 break
-        df = df.drop(ers_scores_drop, axis=1)
+        df = df.drop(self._scores_drop, axis=1)
         rows = []
         for _, group in df.groupby('Coded Provider ID'):
             rows.append(group['Date'].iloc[0])
@@ -241,10 +243,10 @@ class CleanErs():
         Take in ERS data as pandas DataFrames
         record averages for columns
         returns X and y
-       '''
+        '''
         clean_ccqb_df = self._clean_ers_ccqb(df_ccqb)
         clean_scores_df = self._clean_ers_scores(df_scores1, df_scores2)
-        df = self._combine_ers_df(clean_ccqb_df, clean_scores_df)
+        df = self._combine_ers_dfs(clean_ccqb_df, clean_scores_df)
         return df.drop('mean', axis=1), df['mean'].values
 
     def transform(self, df):
