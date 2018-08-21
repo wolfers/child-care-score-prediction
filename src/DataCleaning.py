@@ -70,18 +70,8 @@ def fill_nans_input(df, col_avg_dict):
     df = create_nan_dummies(df)
     return df.fillna(col_avg_dict)
 
-def create_record_cols(df, dict=None):
-    if dict == None:
-        record_type = get_record_types(df)
-    else:
-        touchpoint = 'Touchpoint: Record Type'
-        convert_list = []
-        for value in dict[touchpoint]:
-            if df[touchpoint] == value:
-                convert_list.append({'_'.join(touchpoint, value): 1})
-            else:
-                convert_list.append({'_'.join(touchpoint, value): 0})
-        record_type = pd.DataFrame(convert_list)
+def create_record_cols(df):
+    record_type = get_record_types(df)
     for col in record_type:
         df[col] = record_type[col]
     return df
@@ -116,6 +106,19 @@ def get_dummy_dict(df, dummy_list):
     for col in dummy_list:
         dummy_dict[col] = df[col].unique()
     return dummy_dict
+
+def make_dummies(df, dummy_dict):
+    for key, value in dummy_dict:
+        for column in value:
+            if df[key] == value:
+                convert_list.append({'_'.join(key, value): 1})
+            else:
+                convert_list.append({"_".join(key, value): 0})
+        temp_df = pd.DataFrame(convert_list)
+        for col in temp_df:
+            df[col] = temp_df[col]
+    return df
+
 
 class CleanClassCCQB():
     def __init__(self):
@@ -227,8 +230,7 @@ class CleanErs():
         #fillnans using saved average
         df_no_nans = fill_nans_input(df, self._ccqb_col_avg_dict)
         df = combine_df(df_no_nans, df_not_avg)
-        df = create_record_cols(df, self.dummy_dict)
         df = self._convert_scored_to_binary(df)
-        #create dummy columns based on waht already exsists
-        #df = pd.get_dummies(df, dummy_na=True, columns=self._dummy_cols)
+        #create dummy columns based on what already exsists
+        df = make_dummies(df, self.dummy_dict)
         return df
