@@ -186,6 +186,14 @@ class CleanErs():
         self.dummy_dict = {}
         self._scores_drop = ['Assessment', 'Site Region', 'Assessment Phase Name']
 
+    def _combine_ers_dfs(df_ccqb, df_scores):
+        df = pd.concat([df_ccqb, df_scores], 1, 'inner')
+        df['Date_means'] = pd.to_datetime(df['Date_means'])
+        df['Date'] = pd.to_datetime(df['Date'])
+        df['time_delta'] = df[['Date', 'Date_means']].diff(axis=1)['Date_means'] / np.timedelta64(1, 'D')
+        return df.drop(['Date', 'Date_means'], axis=1)
+
+
     def _clean_ers_ccqb(self, df_ers):
         self.dummy_dict = get_dummy_dict(df_ers, self._dummy_cols)
         df = drop_text_cols(df_ers, self._drop_cols)
@@ -200,19 +208,21 @@ class CleanErs():
         df = pd.get_dummies(df, columns=self._dummy_cols)
         return df
     
-    def _clean_ers_scores(self, df1, df2):
-        df1 = df1.set_index('Assessment Id')
-        df2 = df2.set_index('Assessment Id')
-        df = pd.concat([df1, df2], 1, 'inner')
-        df = df.drop(self._scores_drop, axis=1)
+    def clean_ers_scores(df, df_scores1, df_scores2):
+        df = pd.concat([df_scores1, df_scores2], 1, 'inner')
+        for name, group in df.groupby('Assessment Phase Name'):
+            if name == 'Initial Rating':
+                df = group
+                break
+        df = df.drop(ers_scores_drop, axis=1)
         rows = []
         for _, group in df.groupby('Coded Provider ID'):
-            rows.append(group.sort_values('Date').iloc[0])
-        df = pd.DataFrame(rows)
-        df.set_index('Coded Provider ID', inplace=True)
-        df_means = pd.DataFrame(df['Date'])
-        df = df.drop('Date', axis=1)
-        df_means['mean'] = df.mean(axis=1)   
+            rows.append(group['Date'].iloc[0])
+        initial_dates = pd.DataFrame(rows)
+        df = df.groupby('Coded Provider ID').mean()
+        df['Date_means'] = initial_dates.values
+        df_means = pd.DataFrame(df['Date_means'])
+        df_means['mean'] = df.mean(axis=1)
         return df_means
 
     def _convert_scored_to_binary(self, df):
@@ -234,8 +244,7 @@ class CleanErs():
        '''
         clean_ccqb_df = self._clean_ers_ccqb(df_ccqb)
         clean_scores_df = self._clean_ers_scores(df_scores1, df_scores2)
-        df = pd.concat([clean_ccqb_df, clean_scores_df], 1, 'inner')
-        df = df.drop('Date', axis=1)
+        df = self._combine_ers_df(clean_ccqb_df, clean_scores_df)
         return df.drop('mean', axis=1), df['mean'].values
 
     def transform(self, df):
@@ -252,5 +261,5 @@ class CleanErs():
         df = combine_df(df_no_nans, df_not_avg)
         df = self._convert_scored_to_binary(df)
         #create dummy columns based on what already exsists
-        df = make_dummies(df, self.dummy_dict.append('Touchpoint: Record Type'))
+        df = make_dummies(df, self.dummy_dict)
         return df
