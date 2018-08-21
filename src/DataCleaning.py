@@ -70,10 +70,9 @@ def fill_nans_input(df, col_avg_dict):
     df = create_nan_dummies(df)
     return df.fillna(col_avg_dict)
 
-def create_record_cols(df):
-    record_type = get_record_types(df)
-    for col in record_type:
-        df[col] = record_type[col]
+def create_record_cols(df, record_types):
+    for col in record_types:
+        df[col] = record_types[col]
     df = df.drop('Touchpoint: Record Type', axis=1)
     return df
 
@@ -84,7 +83,6 @@ def combine_df(df1, df2, train=True):
     '''
     if train == True:
         df2 = take_earliest_date(df2)
-
     df2.set_index('Coded ID', inplace=True)
     for col in df1:
         df2[col] = df1[col]
@@ -113,9 +111,9 @@ def make_dummies(df, dummy_dict):
         convert_list = []
         for column in value:
             if df[key] == column:
-                convert_list.append({'_'.join(key, column): 1})
+                convert_list.append({'_'.join([key, column]): 1})
             else:
-                convert_list.append({"_".join(key, column): 0})
+                convert_list.append({"_".join([key, column]): 0})
         temp_df = pd.DataFrame(convert_list)
         for col in temp_df:
             df[col] = temp_df[col]
@@ -202,8 +200,9 @@ class CleanErs():
         df_avg, df_not_avg = separate_df(df, self._sep_list)
         df_avg = average_values(df_avg)
         df_no_nans, self._ccqb_col_avg_dict = fill_nans_train(df_avg)
-        df_not_avg = create_record_cols(df_not_avg)
+        record_types = get_record_types(df_not_avg)
         df = combine_df(df_no_nans, df_not_avg)
+        df = create_record_cols(df, record_types)
         df = self._convert_scored_to_binary(df)
         df = pd.get_dummies(df, columns=self._dummy_cols)
         return df
