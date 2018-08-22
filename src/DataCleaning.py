@@ -13,30 +13,38 @@ def drop_text_cols(df, drop_cols_list):
             df = df.drop(col, axis=1).copy()
     return df
 
-def remove_useless_cols(df):
-    '''
-    removes any columns that contain only 0s from a dataframe
-    '''
-    for col in df.columns:
-        if list(df[col].unique()) == [0]:
-            df = df.drop(col, axis=1).copy()
-    return df
-
 def separate_df(df, sep_list):
     '''
     seperate the DataFrame into two seperate DataFrame using the dep_list
     The intention is to use one for finding the averages and filling the nans in those columns
     '''
-    df = df.sort_values('Coded ID').copy()
+    df = df.sort_values('Coded ID')
     df2 = pd.DataFrame(df['Coded ID'])
     for col in df.columns[1:]:
-        if col in sep_list or "Scored?" in col:
+        if col in sep_list:
+            df2[col] = df[col]
+        elif "Scored?" in col:
             df2[col] = df[col]
             df = df.drop(col, axis=1)
-    return df, df2
+    return df.set_index('Coded ID'), df2.set_index('Coded ID')
 
-def average_values(df):
-    return df.groupby('Coded ID').mean()
+def combine_df(df1, df2, train=True):
+    '''
+    combines DataFrames together for use in 
+    cleaning the ccqb data
+    '''
+    if train == True:
+        df2 = take_earliest_date(df2)
+    for col in df1:
+        df2[col] = df1[col]
+    return df2
+
+def get_dates_at_thresh_and_mean(df):
+    rows = []
+    for name, group in df.groupby('Coded ID'):
+        earliest_date = group['Date'].min()
+        rows.append(group[(group['Date'] < earliest_date + np.timedelta64(60, 'D'))].mean())
+    return = pd.DataFrame(rows, df.index.unique())
 
 def take_earliest_date(df):
     '''
@@ -76,18 +84,6 @@ def create_record_cols(df, record_types):
     df = df.drop('Touchpoint: Record Type', axis=1)
     return df
 
-def combine_df(df1, df2, train=True):
-    '''
-    combines DataFrames together for use in 
-    cleaning the ccqb data
-    '''
-    if train == True:
-        df2 = take_earliest_date(df2)
-    df2.set_index('Coded ID', inplace=True)
-    for col in df1:
-        df2[col] = df1[col]
-    return df2
-
 def create_nan_dummies(df):
     '''
     create dummy columns for NaN values
@@ -115,6 +111,7 @@ def make_dummies(df, dummy_dict):
             else:
                 convert_list.append({"_".join([key, column]): 0})
         temp_df = pd.DataFrame(convert_list)
+        #try using concat
         for col in temp_df:
             df[col] = temp_df[col]
     return df
@@ -166,7 +163,6 @@ class CleanClassCCQB():
         #create dummies
         df = pd.get_dummies(df, dummy_na=True, columns=self._dummy_cols)
         #remove any columns that contain only 0s after creating the dummy columns
-        df = remove_useless_cols(df)
         #create columns for missing values
         #fill NaNs with averages
         return df
@@ -197,11 +193,11 @@ class CleanErs():
         df = drop_text_cols(df_ers, self._drop_cols)
         #data contains some messy columns at the end with no data, this is only for those.
         df = df.drop([2939, 2940, 2941, 2942, 2943, 2944, 2945])
-        df_avg, df_not_avg = separate_df(df, self._sep_list)
-        df_avg = average_values(df_avg)
-        df_no_nans, self._ccqb_col_avg_dict = fill_nans_train(df_avg)
-        record_types = get_record_types(df_not_avg)
-        df = combine_df(df_no_nans, df_not_avg)
+        df_to_avg, df_saved_cols = separate_df(df, self._sep_list)
+        df_transformed = get_dates_at_thresh_and_mean(df_to_avg)
+        df_no_nans, self._ccqb_col_avg_dict = fill_nans_train(df_transformed)
+        record_types = get_record_types(df_saved_cols)
+        df = combine_df(df_no_nans, df_saved_cols)
         df = create_record_cols(df, record_types)
         df = self._convert_scored_to_binary(df)
         df = pd.get_dummies(df, columns=self._dummy_cols)
