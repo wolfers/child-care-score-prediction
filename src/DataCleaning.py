@@ -44,7 +44,7 @@ def get_dates_at_thresh_and_mean(df):
     for name, group in df.groupby('Coded ID'):
         earliest_date = group['Date'].min()
         rows.append(group[(group['Date'] < earliest_date + np.timedelta64(60, 'D'))].mean())
-    return = pd.DataFrame(rows, df.index.unique())
+    return pd.DataFrame(rows, df.index.unique())
 
 def take_earliest_date(df):
     '''
@@ -59,7 +59,7 @@ def get_record_types(df):
     '''
     make a dummy if a groupby contians values
     '''
-    df = pd.get_dummies(df[['Coded ID', 'Touchpoint: Record Type']],
+    df = pd.get_dummies(df['Touchpoint: Record Type'],
                    dummy_na=True, columns=['Touchpoint: Record Type'])
     return df.groupby('Coded ID').max()
 
@@ -166,13 +166,19 @@ class CleanClassCCQB():
         #create columns for missing values
         #fill NaNs with averages
         return df
-
+'''
+'ERS Scale Average',
+'Subscale Average - Space & Furnishings',
+'Subscale Average - Personal Care Routine',
+'Subscale Average - Language-Reasoning',
+'Subscale Average - Activities', 'Subscale Average - Interactions',
+'Subscale Average - Program Structure']
+'''
 class CleanErs():
     def __init__(self):
         self._scores_drop = ['Assessment', 'Site Region', 'Assessment Phase Name']
-        self._drop_cols = ['Identifier','Touchpoint: Owner Name',
-                          'Provider: Assigned Staff', 'Touchpoint: Created Date',
-                          'Touchpoint: Created By', 'Room Observed', 'Touchpoint: ID']
+        self._drop_cols = ['Identifier','Touchpoint: Owner Name', 'Provider: Assigned Staff', 
+                          'Touchpoint: Created Date', 'Touchpoint: Created By', 'Room Observed', 'Touchpoint: ID']
         self._dummy_cols = ['Provider: Region', 'Provider: Type of Care']
         #list used when seperating things during the cleaning of the ccqb data
         self._sep_list = ['Provider: Region', 'Provider: Type of Care', 'Touchpoint: Record Type', 'Date']
@@ -228,6 +234,7 @@ class CleanErs():
         data that indicate scoring from Yes and No to 1 and 0
         returns transformed df
         '''
+        df = df.drop(np.nan, axis=1)
         for col in df.columns:
             if 'Scored?' in col:
                 df[col] = df[col].eq('Yes').mul(1)
