@@ -113,7 +113,7 @@ def make_dummies(df, dummy_dict):
             df[col] = temp_df[col]
     return df
 
-def clean_scores_dates(self, scores, ccqb):
+def clean_scores_dates(scores, ccqb):
     rows = []
     for name, group in scores.groupby('Coded Provider ID'):
         if name in ccqb.index:
@@ -125,7 +125,12 @@ def clean_scores_dates(self, scores, ccqb):
     return pd.DataFrame(rows)
 
 
-class CleanClassCCQB():
+def combine_finished_dfs( df_ccqb, df_scores):
+    df = pd.concat([df_ccqb, df_scores], 1, 'inner')
+    df['time_delta'] = df[['Date', 'Date_means']].diff(axis=1)['Date_means'] / np.timedelta64(1, 'D')
+    return df.drop(['Date', 'Date_means'], axis=1)
+
+class CleanClass():
     def __init__(self):
         self._drop_cols = ['Identifier', 'Regard for Child/Student Persp Feedback',
                                 'Touchpoint: Owner Name', 'Provider: Assigned Staff',
@@ -134,6 +139,7 @@ class CleanClassCCQB():
                                 'Emotional/Classroom Org Average', 'Instructional/Engaged Language Average',]
         self._dummy_cols = ['Provider: Region', 'Provider: Type of Care']
         self._sep_list = ['Provider: Region', 'Provider: Type of Care', 'Touchpoint: Record Type', 'Date']
+        self._scores_drop = ['Date', 'Assessment Id']
         self._ccqb_col_avg_dict = {}
         self._dummy_dict = {}
 
@@ -151,12 +157,13 @@ class CleanClassCCQB():
         return df
 
     def _clean_class_scores(self, df_scores, df_ccqb):
+        df_scores = df_scores.copy()
         df_scores.columns = ['_'.join(col).strip() for col in df_scores.columns.values]
-        df_scores.rename({'Unnamed: 0_level_0_Assessment Id': 'assessment_id', 
-                                'Unnamed: 1_level_0_Assessment Phase Desc': 'assessment_phase_desc',
-                                'Unnamed: 2_level_0_Assessment': 'assessment',
-                                'Unnamed: 3_level_0_Date': 'date'}, axis='columns', inplace=True)
-        df_scores['Coded ID'] = df_scores.index()
+        df_scores = df_scores.rename({'Unnamed: 0_level_0_Assessment Id': 'Assessment Id', 
+                                'Unnamed: 1_level_0_Assessment Phase Desc': 'Assessment Phase Desc',
+                                'Unnamed: 2_level_0_Assessment': 'Assessment',
+                                'Unnamed: 3_level_0_Date': 'Date'}, axis='columns')
+        df_scores['Coded Provider ID'] = df_scores.index
         df_scores['Date_means'] = pd.to_datetime(df_scores['Date'])
         df_scores = clean_scores_dates(df_scores, df_ccqb)
         df_means = df_scores[['Date_means', 'Coded Provider ID']]
@@ -166,16 +173,16 @@ class CleanClassCCQB():
         df_means['mean'] = df_scores.mean(axis=1)
         return df_means
 
-    def fit_transform_train(self, df):
+    def fit_transform_train(self, df_ccqb, df_scores):
         '''
         Take in CLASS CCQB data as a pandas DataFrame
         record averages for columns, total columns,
         and then return a transformed DataFrame ready to be
         put into a model.
         '''
-                clean_ccqb_df = self._clean_ers_ccqb(df_ccqb)
-        clean_scores_df = self._clean_ers_scores(df_scores1, df_scores2, clean_ccqb_df)
-        df = self._combine_ers_dfs(clean_ccqb_df, clean_scores_df)
+        clean_ccqb_df = self._clean_class_ccqb(df_ccqb)
+        clean_scores_df = self._clean_class_scores(df_scores, clean_ccqb_df)
+        df = combine_finished_dfs(clean_ccqb_df, clean_scores_df)
         return df.drop('mean', axis=1), df['mean'].values
     
     def transform(self, df):
@@ -200,14 +207,6 @@ class CleanErs():
         self._ccqb_col_avg_dict = {}
         self._dummy_dict = {}
         self._scores_drop = ['Site Region', 'Assessment Phase Name', 'Date']
-
-    def _combine_ers_dfs(self, df_ccqb, df_scores):
-        df = pd.concat([df_ccqb, df_scores], 1, 'inner')
-        #df['Date_means'] = pd.to_datetime(df['Date_means'])
-        #df['Date'] = pd.to_datetime(df['Date'])
-        df['time_delta'] = df[['Date', 'Date_means']].diff(axis=1)['Date_means'] / np.timedelta64(1, 'D')
-        return df.drop(['Date', 'Date_means'], axis=1)
-
 
     def _clean_ers_ccqb(self, df_ers):
         self._dummy_dict = get_dummy_dict(df_ers, self._dummy_cols)
@@ -245,7 +244,7 @@ class CleanErs():
         '''
         clean_ccqb_df = self._clean_ers_ccqb(df_ccqb)
         clean_scores_df = self._clean_ers_scores(df_scores1, df_scores2, clean_ccqb_df)
-        df = self._combine_ers_dfs(clean_ccqb_df, clean_scores_df)
+        df = combine_finished_dfs(clean_ccqb_df, clean_scores_df)
         return df.drop('mean', axis=1), df['mean'].values
 
     def transform(self, df):
