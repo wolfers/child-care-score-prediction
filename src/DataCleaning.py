@@ -9,7 +9,7 @@ def drop_text_cols(df, drop_cols_list):
     '''
     df = df.drop(drop_cols_list, axis=1).copy()
     for col in df.columns:
-        if "Feedback for Provider" in col or "Notes" in col or "FB for Provider" in col:
+        if "Feedback for Provider" in col or "Notes" in col or "FB for Provider" in col or "Scored?" in col:
             df = df.drop(col, axis=1).copy()
     return df
 
@@ -23,9 +23,6 @@ def separate_df(df, sep_list):
     for col in df.columns[1:]:
         if col in sep_list:
             df2[col] = df[col]
-        elif "Scored?" in col:
-            df2[col] = df[col]
-            df = df.drop(col, axis=1)
     return df.set_index('Coded ID'), df2.set_index('Coded ID')
 
 def combine_df(df1, df2, train=True):
@@ -41,7 +38,7 @@ def combine_df(df1, df2, train=True):
 
 def get_dates_at_thresh_and_mean(df):
     rows = []
-    for name, group in df.groupby('Coded ID'):
+    for _, group in df.groupby('Coded ID'):
         earliest_date = group['Date'].min()
         rows.append(group[(group['Date'] < earliest_date + np.timedelta64(60, 'D'))].mean())
     return pd.DataFrame(rows, df.index.unique())
@@ -122,9 +119,27 @@ class CleanClassCCQB():
         self._drop_cols = ['Identifier', 'Regard for Child/Student Persp Feedback',
                                 'Touchpoint: Owner Name', 'Provider: Assigned Staff',
                                 'Touchpoint: Created Date', 'Touchpoint: Created By',
-                                'Room Observed', 'Documentation Time', 'Touchpoint: ID']
-        self._dummy_cols = ['Provider: Region', 'Provider: Type of Care', 'Touchpoint: Record Type']
-        self._columns = []
+                                'Room Observed', 'Documentation Time', 'Touchpoint: ID',
+                                'Emotional/Classroom Org Average', 'Instructional/Engaged Language Average',]
+        self._dummy_cols = ['Provider: Region', 'Provider: Type of Care']
+        self._sep_list = ['Provider: Region', 'Provider: Type of Care', 'Touchpoint: Record Type', 'Date']
+        self._ccqb_col_avg_dict = {}
+        self._dummy_dict = {}
+
+    def _clean_class_ccqb(self, df):
+        self._dummy_dict = get_dummy_dict(df, self._dummy_cols)
+        df = df.drop([2584, 2585, 2586,2587, 2588, 2589, 2590])
+        df = drop_text_cols(df, self._drop_cols)
+        df_to_avg, df_saved_cols = separate_df(df, self._sep_list)
+        df_transformed = get_dates_at_thresh_and_mean(df_to_avg)
+        df_no_nans, self._ccqb_col_avg_dict = fill_nans_train(df_transformed)
+        record_types = get_record_types(df_saved_cols)
+        df = combine_df(df_no_nans, df_saved_cols)
+        df = create_record_cols(df, record_types)
+        df = pd.get_dummies(df, columns=self._dummy_cols)
+        return df
+
+    def _clean_class_scores(self, df)
 
     def fit_transform_train(self, df):
         '''
@@ -133,23 +148,10 @@ class CleanClassCCQB():
         and then return a transformed DataFrame ready to be
         put into a model.
         '''
-        #drop useless rows at the end
-        df = df.drop([2584, 2585, 2586,2587, 2588, 2589, 2590])
-        #take the most recent ratings
-        idx = df.groupby(['Coded ID'], sort=False)['Date'].transform(max) == df['Date']
-        df = df[idx]
-        #average any ratings that are taken on the same day
-        #drop unused columns
-        df = drop_text_cols(df, self._drop_cols)
-        #create dummies
-        df = pd.get_dummies(df, dummy_na=True, columns=self._dummy_cols)
-        #remove any columns that contain only 0s after creating the dummy columns
-        df = remove_useless_cols(df)
-        #calculate and record average
-        #create columsn for missing values
-        #fill NaNs
-        #record all used columns
-        self._columns = df.columns
+        pass
+
+        
+
         return df
     
     def transform(self, df):
@@ -166,14 +168,7 @@ class CleanClassCCQB():
         #create columns for missing values
         #fill NaNs with averages
         return df
-'''
-'ERS Scale Average',
-'Subscale Average - Space & Furnishings',
-'Subscale Average - Personal Care Routine',
-'Subscale Average - Language-Reasoning',
-'Subscale Average - Activities', 'Subscale Average - Interactions',
-'Subscale Average - Program Structure']
-'''
+
 class CleanErs():
     def __init__(self):
         self._scores_drop = ['Assessment', 'Site Region', 'Assessment Phase Name']
@@ -186,7 +181,7 @@ class CleanErs():
         #list used when seperating things during the cleaning of the ccqb data
         self._sep_list = ['Provider: Region', 'Provider: Type of Care', 'Touchpoint: Record Type', 'Date']
         self._ccqb_col_avg_dict = {}
-        self.dummy_dict = {}
+        self._dummy_dict = {}
         self._scores_drop = ['Site Region', 'Assessment Phase Name', 'Date']
 
     def _combine_ers_dfs(self, df_ccqb, df_scores):
@@ -198,7 +193,7 @@ class CleanErs():
 
 
     def _clean_ers_ccqb(self, df_ers):
-        self.dummy_dict = get_dummy_dict(df_ers, self._dummy_cols)
+        self._dummy_dict = get_dummy_dict(df_ers, self._dummy_cols)
         df = drop_text_cols(df_ers, self._drop_cols)
         #data contains some messy columns at the end with no data, this is only for those.
         df = df.drop([2939, 2940, 2941, 2942, 2943, 2944, 2945])
@@ -208,7 +203,6 @@ class CleanErs():
         record_types = get_record_types(df_saved_cols)
         df = combine_df(df_no_nans, df_saved_cols)
         df = create_record_cols(df, record_types)
-        df = self._convert_scored_to_binary(df)
         df = pd.get_dummies(df, columns=self._dummy_cols)
         return df
 
@@ -262,9 +256,7 @@ class CleanErs():
 
     def transform(self, df):
         '''
-        take in a DataFrame and return
-        a ready to use DataFrame for a model prediction
-        must have already fit the class on some data to transform
+        Needs to be re-written
         '''
         df = drop_text_cols(df, self._drop_cols)
         df_avg, df_not_avg = separate_df(df, self._sep_list)
