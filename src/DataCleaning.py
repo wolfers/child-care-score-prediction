@@ -113,6 +113,17 @@ def make_dummies(df, dummy_dict):
             df[col] = temp_df[col]
     return df
 
+def clean_scores_dates(self, scores, ccqb):
+    rows = []
+    for name, group in scores.groupby('Coded Provider ID'):
+        if name in ccqb.index:
+            date = ccqb.loc[name]['Date']
+            dates_df = group[(group['Date_means'] > date)]
+            if len(dates_df) != 0:
+                date_row = dates_df.sort_values('Date').iloc[0]
+                rows.append(date_row)
+    return pd.DataFrame(rows)
+
 
 class CleanClassCCQB():
     def __init__(self):
@@ -139,7 +150,21 @@ class CleanClassCCQB():
         df = pd.get_dummies(df, columns=self._dummy_cols)
         return df
 
-    def _clean_class_scores(self, df)
+    def _clean_class_scores(self, df_scores, df_ccqb):
+        df_scores.columns = ['_'.join(col).strip() for col in df_scores.columns.values]
+        df_scores.rename({'Unnamed: 0_level_0_Assessment Id': 'assessment_id', 
+                                'Unnamed: 1_level_0_Assessment Phase Desc': 'assessment_phase_desc',
+                                'Unnamed: 2_level_0_Assessment': 'assessment',
+                                'Unnamed: 3_level_0_Date': 'date'}, axis='columns', inplace=True)
+        df_scores['Coded ID'] = df_scores.index()
+        df_scores['Date_means'] = pd.to_datetime(df_scores['Date'])
+        df_scores = clean_scores_dates(df_scores, df_ccqb)
+        df_means = df_scores[['Date_means', 'Coded Provider ID']]
+        df_means = df_means.set_index('Coded Provider ID')
+        df_scores = df_scores.set_index('Coded Provider ID')
+        df_scores = df_scores.drop(self._scores_drop, axis=1)
+        df_means['mean'] = df_scores.mean(axis=1)
+        return df_means
 
     def fit_transform_train(self, df):
         '''
@@ -148,11 +173,10 @@ class CleanClassCCQB():
         and then return a transformed DataFrame ready to be
         put into a model.
         '''
-        pass
-
-        
-
-        return df
+                clean_ccqb_df = self._clean_ers_ccqb(df_ccqb)
+        clean_scores_df = self._clean_ers_scores(df_scores1, df_scores2, clean_ccqb_df)
+        df = self._combine_ers_dfs(clean_ccqb_df, clean_scores_df)
+        return df.drop('mean', axis=1), df['mean'].values
     
     def transform(self, df):
         '''
@@ -160,14 +184,7 @@ class CleanClassCCQB():
         a ready to use df for a model prediction
         must have already fir the calss on some data to transform
         '''
-        #drop unused columns
-        df = drop_text_cols(df, self._drop_cols)
-        #create dummies
-        df = pd.get_dummies(df, dummy_na=True, columns=self._dummy_cols)
-        #remove any columns that contain only 0s after creating the dummy columns
-        #create columns for missing values
-        #fill NaNs with averages
-        return df
+        pass
 
 class CleanErs():
     def __init__(self):
@@ -206,42 +223,19 @@ class CleanErs():
         df = pd.get_dummies(df, columns=self._dummy_cols)
         return df
 
-    def _clean_scores_dates(self, scores, ccqb):
-        rows = []
-        for name, group in scores.groupby('Coded Provider ID'):
-            if name in ccqb.index:
-                date = ccqb.loc[name]['Date']
-                dates_df = group[(group['Date_means'] > date)]
-                if len(dates_df) != 0:
-                    date_row = dates_df.sort_values('Date').iloc[0]
-                    rows.append(date_row)
-        return pd.DataFrame(rows)
-
 
     def _clean_ers_scores(self, df_scores1, df_scores2, df_ccqb):
         df_scores1 = df_scores1.set_index('Assessment Id')
         df_scores2 = df_scores2.set_index('Assessment Id')
         df_scores = pd.concat([df_scores1, df_scores2], 1, 'inner')
         df_scores['Date_means'] = pd.to_datetime(df_scores['Date'])
-        df_scores = self._clean_scores_dates(df_scores, df_ccqb)
+        df_scores = clean_scores_dates(df_scores, df_ccqb)
         df_means = df_scores[['Date_means', 'Coded Provider ID']]
         df_means = df_means.set_index('Coded Provider ID')
         df_scores = df_scores.set_index('Coded Provider ID')
         df_scores = df_scores.drop(self._scores_drop, axis=1)
         df_means['mean'] = df_scores.mean(axis=1)
         return df_means
-
-    def _convert_scored_to_binary(self, df):
-        '''
-        Takes in a DataFrame and converts all the columns in the ERS
-        data that indicate scoring from Yes and No to 1 and 0
-        returns transformed df
-        '''
-        df = df.drop(np.nan, axis=1)
-        for col in df.columns:
-            if 'Scored?' in col:
-                df[col] = df[col].eq('Yes').mul(1)
-        return df
 
     def fit_transform_train(self, df_ccqb, df_scores1, df_scores2):
         '''
