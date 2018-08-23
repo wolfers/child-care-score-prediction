@@ -178,7 +178,10 @@ class CleanErs():
     def __init__(self):
         self._scores_drop = ['Assessment', 'Site Region', 'Assessment Phase Name']
         self._drop_cols = ['Identifier','Touchpoint: Owner Name', 'Provider: Assigned Staff', 
-                          'Touchpoint: Created Date', 'Touchpoint: Created By', 'Room Observed', 'Touchpoint: ID']
+                          'Touchpoint: Created Date', 'Touchpoint: Created By', 'Room Observed', 'Touchpoint: ID',
+                          'ERS Scale Average', 'Subscale Average - Space & Furnishings',
+                          'Subscale Average - Personal Care Routine', 'Subscale Average - Language-Reasoning',
+                          'Subscale Average - Activities', 'Subscale Average - Interactions', 'Subscale Average - Program Structure']
         self._dummy_cols = ['Provider: Region', 'Provider: Type of Care']
         #list used when seperating things during the cleaning of the ccqb data
         self._sep_list = ['Provider: Region', 'Provider: Type of Care', 'Touchpoint: Record Type', 'Date']
