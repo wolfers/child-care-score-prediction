@@ -15,8 +15,9 @@ def drop_text_cols(df, drop_cols_list):
 
 def separate_df(df, sep_list):
     '''
-    seperate the DataFrame into two seperate DataFrame using the dep_list
+    seperate the DataFrame into two seperate DataFrame using the sep_list
     The intention is to use one for finding the averages and filling the nans in those columns
+    while preserving the other columns
     '''
     df = df.sort_values('Coded ID')
     df2 = pd.DataFrame(df['Coded ID'])
@@ -27,8 +28,8 @@ def separate_df(df, sep_list):
 
 def combine_df(df1, df2, train=True):
     '''
-    combines DataFrames together for use in 
-    cleaning the ccqb data
+    combines two dfs together
+    if called for training data it also gets the earliest date
     '''
     if train == True:
         df2 = take_earliest_date(df2)
@@ -37,6 +38,10 @@ def combine_df(df1, df2, train=True):
     return df2
 
 def get_dates_at_thresh_and_mean(df):
+    '''
+    returns a DataFrame containg only the data that is within a certain 
+    time from the first baseline for each provider
+    '''
     rows = []
     for _, group in df.groupby('Coded ID'):
         earliest_date = group['Date'].min()
@@ -54,7 +59,8 @@ def take_earliest_date(df):
 
 def get_record_types(df):
     '''
-    make a dummy if a groupby contians values
+    takes all the of the record types for a provider and creates a dummy columns that contain 
+    a 1 for any record type entered for the provider.
     '''
     df = pd.get_dummies(df['Touchpoint: Record Type'],
                    dummy_na=True, columns=['Touchpoint: Record Type'])
@@ -62,7 +68,7 @@ def get_record_types(df):
 
 def fill_nans_train(df):
     '''
-    Find the average of each column and then fill the NaNs with the average
+    Find the mean of each column and then fill the NaNs with the mean
     '''
     col_avg_dict = {}
     for col in df.columns:
@@ -71,11 +77,11 @@ def fill_nans_train(df):
     df = create_nan_dummies(df)
     return df.fillna(col_avg_dict), col_avg_dict
 
-def fill_nans_input(df, col_avg_dict):
-    df = create_nan_dummies(df)
-    return df.fillna(col_avg_dict)
-
 def create_record_cols(df, record_types):
+    '''
+    Gets the record columns and adds them to the DataFrame
+    drops original Touchpoint: Record Type column
+    '''
     for col in record_types:
         df[col] = record_types[col]
     df = df.drop('Touchpoint: Record Type', axis=1)
@@ -91,7 +97,7 @@ def create_nan_dummies(df):
 
 def get_dummy_dict(df, dummy_list):
     '''
-    create a dict whos keys are columns that will eb converted to dummies
+    create a dict whos keys are columns that will be converted to dummies
     values are the possible values of that column
     '''
     dummy_dict = {}
@@ -99,21 +105,11 @@ def get_dummy_dict(df, dummy_list):
         dummy_dict[col] = df[col].unique()
     return dummy_dict
 
-def make_dummies(df, dummy_dict):
-    for key, value in dummy_dict:
-        convert_list = []
-        for column in value:
-            if df[key] == column:
-                convert_list.append({'_'.join([key, column]): 1})
-            else:
-                convert_list.append({"_".join([key, column]): 0})
-        temp_df = pd.DataFrame(convert_list)
-        #try using concat
-        for col in temp_df:
-            df[col] = temp_df[col]
-    return df
-
 def clean_scores_dates(scores, ccqb):
+    '''
+    creates and returns a new DataFrame that containes the most scoring that is closest to
+    the baseline rating, excluding any that come before the baseline.
+    '''
     rows = []
     for name, group in scores.groupby('Coded Provider ID'):
         if name in ccqb.index:
@@ -124,8 +120,10 @@ def clean_scores_dates(scores, ccqb):
                 rows.append(date_row)
     return pd.DataFrame(rows)
 
-
 def combine_finished_dfs( df_ccqb, df_scores):
+    '''
+    combines the DataFrames and creates a column for the amount of days between the baseline and the rating.
+    '''
     df = pd.concat([df_ccqb, df_scores], 1, 'inner')
     df['time_delta'] = df[['Date', 'Date_means']].diff(axis=1)['Date_means'] / np.timedelta64(1, 'D')
     return df.drop(['Date', 'Date_means'], axis=1)
@@ -145,6 +143,13 @@ class CleanClass():
         self._dummy_dict = {}
 
     def _clean_class_ccqb(self, df):
+        '''
+        clean the class ccqb data.
+        drops useless rows at the end of excel sheet,
+        creates a dict of dummy cols, drops text columns,
+        finds the right dates and averages,
+        returns cleaned ccqb data
+        '''
         self._dummy_dict = get_dummy_dict(df, self._dummy_cols)
         df = df.drop([2584, 2585, 2586,2587, 2588, 2589, 2590])
         df = drop_text_cols(df, self._drop_cols)
@@ -158,6 +163,12 @@ class CleanClass():
         return df
 
     def _clean_class_scores(self, df_scores, df_ccqb):
+        '''
+        cleans the class scores data
+        flattens the muti-index DataFrame to one index, 
+        converts dates to datetime, cleans the data
+        outputs a dataframe containing the dates and means
+        '''
         df_scores = df_scores.copy()
         df_scores.columns = ['_'.join(col).strip() for col in df_scores.columns.values]
         df_scores = df_scores.rename({'Unnamed: 0_level_0_Assessment Id': 'Assessment Id', 
@@ -176,10 +187,8 @@ class CleanClass():
 
     def fit_transform_train(self, df_ccqb, df_scores):
         '''
-        Take in CLASS CCQB data as a pandas DataFrame
-        record averages for columns, total columns,
-        and then return a transformed DataFrame ready to be
-        put into a model.
+        Take in data as pandas DataFrames
+        cleans ccqb and scores data and then then outputs X and y
         '''
         clean_ccqb_df = self._clean_class_ccqb(df_ccqb)
         clean_scores_df = self._clean_class_scores(df_scores, clean_ccqb_df)
@@ -210,6 +219,12 @@ class CleanErs():
         self._scores_drop = ['Site Region', 'Assessment Phase Name', 'Date']
 
     def _clean_ers_ccqb(self, df_ers):
+        '''
+        cleans ers ccqb data.
+        creates dummy column dict, drops useless rows and columns,
+        find right dates and averages
+        returns cleaned data
+        '''
         self._dummy_dict = get_dummy_dict(df_ers, self._dummy_cols)
         df = drop_text_cols(df_ers, self._drop_cols)
         #data contains some messy columns at the end with no data, this is only for those.
@@ -225,6 +240,11 @@ class CleanErs():
 
 
     def _clean_ers_scores(self, df_scores1, df_scores2, df_ccqb):
+        '''
+        takes in both scores DataFrames,
+        concats them together, converts dates to datetime objects,
+        returns DataFrame containing the dates and means
+        '''
         df_scores1 = df_scores1.set_index('Assessment Id')
         df_scores2 = df_scores2.set_index('Assessment Id')
         df_scores = pd.concat([df_scores1, df_scores2], 1, 'inner')
@@ -240,7 +260,7 @@ class CleanErs():
     def fit_transform_train(self, df_ccqb, df_scores1, df_scores2):
         '''
         Take in ERS data as pandas DataFrames
-        record averages for columns
+        cleans both sets of data
         returns X and y
         '''
         clean_ccqb_df = self._clean_ers_ccqb(df_ccqb)
