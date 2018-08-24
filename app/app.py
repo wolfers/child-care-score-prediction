@@ -12,17 +12,17 @@ def dashboard():
 
 @app.route('/predictERS', methods=["POST"])
 def predictERS():
-    df = pd.read_csv('data/fake_ers_X.csv')
-    df['time_delta'] = 150
+    df = pd.read_csv('data/fake_ers_X.csv', sep='|')
+    df['time_delta'] = [150]
     prediction = ers_model.predict(df)
-    return jsonify({'prediction': prediction, 'test_type': 'ers'})
+    return jsonify({'prediction': prediction[0], 'test_type': 'ers'})
 
 @app.route('/predictCLASS', methods=["POST"])
 def predictCLASS():
-    df = pd.read_csv('data/fake_class_X.csv')
-    df['time_delta'] = 150
-    prediction = class_model.predict()
-    return jsonify({'prediction': prediction, 'test_type': 'class'})
+    df = pd.read_csv('data/fake_class_X.csv', sep='|')
+    df['time_delta'] = [150]
+    prediction = class_model.predict(df)
+    return jsonify({'prediction': prediction[0], 'test_type': 'class'})
 
 if __name__ == '__main__':
     #load pickled models for use in prediction

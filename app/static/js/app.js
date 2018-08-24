@@ -21,7 +21,4 @@ let display_prediction = function(prediction) {
     else if (prediction.test_type == "class") {
         $("span#prediction_class").html(prediction.prediction)
     }
-    else {
-        $("span#error").html("There was an error predicting a score")
-    }
 };
