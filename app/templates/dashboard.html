@@ -10,15 +10,16 @@
         </title>
     </head>
     <body>
-        <div class="prediction">
+        <p><span id="error"></span></p>
+        <div class="prediction" id="class">
             <h3>CLASS score prediction</h3>
-            <button onclick="predictCLASS()">CLASS scores</button>
-            <p><span id="CLASSpredict"></span></p>
+            <button onclick="get_predict(document.getElementById('class').id)">CLASS scores</button>
+            <p><span id="prediction_class"></span></p>
         </div>
-        <div class="prediction">
+        <div class="prediction" id="ers">
             <h3>CLASS score prediction</h3>
-            <button onclick="predictERS()">ERS scores</button>
-            <p><span id="ERSpredict"></span></p>
+            <button onclick="get_predict(document.getElementById('ers').id)">ERS scores</button>
+            <p><span id="prediction_ers"></span></p>
         </div>
     </body>
 </html>
