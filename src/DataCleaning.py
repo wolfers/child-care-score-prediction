@@ -136,7 +136,8 @@ class CleanClass():
                                 'Touchpoint: Owner Name', 'Provider: Assigned Staff',
                                 'Touchpoint: Created Date', 'Touchpoint: Created By',
                                 'Room Observed', 'Documentation Time', 'Touchpoint: ID',
-                                'Emotional/Classroom Org Average', 'Instructional/Engaged Language Average',]
+                                'Emotional/Classroom Org Average', 'Instructional/Engaged Language Average',
+                                'Travel Time']
         self._dummy_cols = ['Provider: Region', 'Provider: Type of Care']
         self._sep_list = ['Provider: Region', 'Provider: Type of Care', 'Touchpoint: Record Type', 'Date']
         self._scores_drop = ['Date', 'Assessment Id']
@@ -183,13 +184,13 @@ class CleanClass():
         clean_ccqb_df = self._clean_class_ccqb(df_ccqb)
         clean_scores_df = self._clean_class_scores(df_scores, clean_ccqb_df)
         df = combine_finished_dfs(clean_ccqb_df, clean_scores_df)
+        df = df.drop(np.nan, axis=1)
         return df.drop('mean', axis=1), df['mean'].values
     
     def transform(self, df):
         '''
-        take in a DataFrame and return
-        a ready to use df for a model prediction
-        must have already fir the calss on some data to transform
+        This function would be written to transform whatever form the data comes in as
+        It preps the data to be run through a fit model for prediction
         '''
         pass
 
@@ -245,19 +246,12 @@ class CleanErs():
         clean_ccqb_df = self._clean_ers_ccqb(df_ccqb)
         clean_scores_df = self._clean_ers_scores(df_scores1, df_scores2, clean_ccqb_df)
         df = combine_finished_dfs(clean_ccqb_df, clean_scores_df)
+        df = df.drop(np.nan, axis=1)
         return df.drop('mean', axis=1), df['mean'].values
 
     def transform(self, df):
         '''
-        Needs to be re-written
+        This function would be written to transform whatever form the data comes in as
+        It preps the data to be run through a fit model for prediction
         '''
-        df = drop_text_cols(df, self._drop_cols)
-        df_avg, df_not_avg = separate_df(df, self._sep_list)
-        df_avg = average_values(df_avg)
-        #fillnans using saved average
-        df_no_nans = fill_nans_input(df, self._ccqb_col_avg_dict)
-        df = combine_df(df_no_nans, df_not_avg)
-        df = self._convert_scored_to_binary(df)
-        #create dummy columns based on what already exsists
-        df = make_dummies(df, self.dummy_dict)
-        return df
+        pass
