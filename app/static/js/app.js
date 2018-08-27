@@ -1,5 +1,5 @@
 let get_predict = function(test_type) {
-    if (test_type == "ers") {
+    if (test_type == 1) {
         var url = '/predictERS'
     }
     else {
