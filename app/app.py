@@ -13,7 +13,8 @@ def dashboard():
 
 @app.route('/ers')
 def ers():
-    return render_template('ers.html')
+    ers_html = create_ers_html()
+    return render_template('ers.html', value=ers_html)
 
 @app.route('/class')
 def class_page():
@@ -53,6 +54,9 @@ def create_graph(times, data, filename):
     plt.xlabel('Days from Baseline')
     plt.ylabel('Average Score')
     plt.savefig(filename)
+
+def create_ers_html():
+    return "<p>help</p>"
 
 if __name__ == '__main__':
     #load pickled models for use in prediction
