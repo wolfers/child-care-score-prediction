@@ -67,16 +67,64 @@
 
           <!-- Breadcrumbs-->
           <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-              <a href="/">Dashboard</a>
-            </li>
-            <li class="breadcrumb-item active">Blank Page</li>
-          </ol>
-
-          <!-- Page Content -->
-          <h1>Blank Page</h1>
-          <hr>
-          <p>This is a great starting point for new custom pages.</p>
+              <li class="breadcrumb-item">
+                <a href="/ers">Dashboard</a>
+              </li>
+              <li class="breadcrumb-item active">ERS data Entry</li>
+            </ol>
+  
+            <div class="card mb-3">
+              <div class="card-header">
+                <i class="fas fa-table"></i>
+                ERS Score Entry</div>
+              <div class="card-body">
+                  <form>
+                      <fieldset>
+                        <legend>Provider Information</legend>
+                        <label>Region</label>
+                        <select name="Provider: Region">
+                            <option value="King/Pierce County">King/Pierce County</option>
+                            <option value="Olympic Peninsula">Olympic Peninsula</option>
+                            <option value="Northwest Washington">Northwest Washington</option>
+                            <option value="Eastern Washington">Eastern Washington</option>
+                            <option value="Southwest Washington">Southwest Washington</option>
+                            <option value="Central Washington">Central Washington</option>
+                          </select> 
+                          <label>Date</label>
+                          <input type="date" name="Date" />
+                          <label>Record Type</label>
+                          <select name="Touchpoint: Record Type">
+                            <option value="QB - ERS FCCERS">FCCERS</option>
+                            <option value="QB - ERS ITERS">ITERS</option>
+                            <option value="QB - ERS ECERS">ECERS</option>
+                          </select>
+                          <label>Number of Children enrolled</label>
+                          <input type="text" name="Number of children enrolled">
+                          <label>Number of Children Present</label>
+                          <input type="text" name="Number of children present">
+                      </fieldset>
+                      <fieldset>
+                        <legend>Scores</legend>
+                        {{value|safe}}
+                      </fieldset>
+                    </form>
+              </div>
+            </div>
+  
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">
+                <a href="/ers">Dashboard</a>
+              </li>
+              <li class="breadcrumb-item active">ERS data display</li>
+            </ol>
+  
+            <div class="card mb-3">
+              <div class="card-header">
+                <i class="fas fa-chart-area"></i>
+                ERS Score Graph</div>
+              <div class="card-body">
+              </div>
+            </div>
 
         </div>
         <!-- /.container-fluid -->
