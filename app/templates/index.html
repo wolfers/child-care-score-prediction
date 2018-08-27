@@ -49,16 +49,6 @@
             <span>Dashboard</span>
           </a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="charts">
-            <i class="fas fa-fw fa-chart-area"></i>
-            <span>Charts</span></a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="tables">
-            <i class="fas fa-fw fa-table"></i>
-            <span>Tables</span></a>
-        </li>
       </ul>
 
       <div id="content-wrapper">
@@ -73,36 +63,57 @@
             <li class="breadcrumb-item active">Overview</li>
           </ol>
           <div class="row">
-              <p><span id="error"></span></p>
-              <div class="prediction" id="class">
-                  <h3>CLASS score prediction</h3>
-                  <button onclick="get_predict(document.getElementById('class').id)">CLASS scores</button>
+              <div class="col-xl-3 col-sm-6 mb-3">
+                  <div class="card text-white bg-primary o-hidden h-100">
+                    <div class="card-body">
+                      <div class="card-body-icon">
+                        <i class="fas fa-fw fa-comments"></i>
+                      </div>
+                      <div class="mr-5">CLASS score prediction</div>
+                    </div>
+                    <a class="card-footer text-white clearfix small z-1" onclick="get_predict(2)">
+                      <span class="float-left">Show Score Graph</span>
+                      <span class="float-right">
+                        <i class="fas fa-angle-right"></i>
+                      </span>
+                    </a>
+                  </div>
               </div>
-              <div class="prediction" id="ers">
-                  <h3>ERS score prediction</h3>
-                  <button onclick="get_predict(document.getElementById('ers').id)">ERS scores</button>
-                  <img class="predictGraph" id="prediction_ers" src=''>
-              </div>
+              <div class="col-xl-3 col-sm-6 mb-3">
+                  <div class="card text-white bg-warning o-hidden h-100">
+                    <div class="card-body">
+                      <div class="card-body-icon">
+                        <i class="fas fa-fw fa-list"></i>
+                      </div>
+                      <div class="mr-5">ERS score prediction</div>
+                    </div>
+                    <a class="card-footer text-white clearfix small z-1" onclick="get_predict(1)">
+                      <span class="float-left">Show Score Graph</span>
+                      <span class="float-right">
+                        <i class="fas fa-angle-right"></i>
+                      </span>
+                    </a>
+                  </div>
+                </div>
           </div>
           <!-- Area Chart Example-->
           <div class="card mb-3">
             <div class="card-header">
               <i class="fas fa-chart-area"></i>
-              Area Chart Example</div>
+              CLASS score graph</div>
             <div class="card-body">
               <img class="predictGraph" id="prediction_class" src=''>
             </div>
+            <div class="card mb-3">
+                <div class="card-header">
+                  <i class="fas fa-chart-area"></i>
+                  ERS score graph</div>
+                <div class="card-body">
+                  <img class="predictGraph" id="prediction_ers" src=''>
+                </div>
+        </div>
         </div>
         <!-- /.container-fluid -->
-
-        <!-- Sticky Footer -->
-        <footer class="sticky-footer">
-          <div class="container my-auto">
-            <div class="copyright text-center my-auto">
-              <span>Created by Trevor Wolfe</span>
-            </div>
-          </div>
-        </footer>
       </div>
       <!-- /.content-wrapper -->
 
