@@ -11,6 +11,14 @@ app = Flask(__name__)
 def dashboard():
     return render_template('index.html')
 
+@app.route('/ers')
+def ers():
+    return render_template('ers.html')
+
+@app.route('/class')
+def class_page():
+    return render_template('class.html')
+
 @app.route('/predictERS', methods=["POST"])
 def predictERS():
     df = pd.read_csv('data/fake_ers_X.csv', sep='|')
