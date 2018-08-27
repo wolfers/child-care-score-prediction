@@ -149,6 +149,46 @@ def combine_finished_dfs(df_ccqb, df_scores):
     return df.drop(['Date', 'Date_means'], axis=1)
 
 
+def create_score_col_names(df):
+    '''
+    Creates and returns a list of score columns
+    '''
+    score_col_names = []
+    for col in df.columns.values:
+        if 'Score' in col:
+            score_col_names.append(col)
+    return score_col_names
+
+
+def create_transform_dummies(df, dummy_dict):
+    '''
+    create dummy columns for the tranform data,
+    based on the fit data columns
+    '''
+    for key, value in dummy_dict:
+        for col in value:
+            if df[key] == col:
+                df[col] = 1
+            else:
+                df[col] = 0
+        df = df.drop(key, axis=1)
+    return df
+
+
+def fill_nans_trans(df, avg_dict):
+    '''
+    create nan dummies for each column and
+    fills in nans with the averages of the fit data
+    '''
+    for col, avg in avg_dict:
+        if df[col] == 'nan':
+            df[col + '_nan'] = 0
+            df[col] = avg
+        else:
+            df[col + '_nan'] = 1
+    return df
+
+
 class CleanClass():
     def __init__(self):
         self._drop_cols = ['Identifier',
@@ -168,6 +208,7 @@ class CleanClass():
         self._scores_drop = ['Date', 'Assessment Id']
         self._ccqb_col_avg_dict = {}
         self._dummy_dict = {}
+        self.score_col_names = []
 
     def _clean_class_ccqb(self, df):
         '''
@@ -180,6 +221,7 @@ class CleanClass():
         self._dummy_dict = get_dummy_dict(df, self._dummy_cols)
         df = df.drop([2584, 2585, 2586, 2587, 2588, 2589, 2590])
         df = drop_text_cols(df, self._drop_cols)
+        self.score_col_names = create_score_col_names(df)
         df_to_avg, df_saved_cols = separate_df(df, self._sep_list)
         df_transformed = get_dates_at_thresh_and_mean(df_to_avg)
         df_no_nans, self._ccqb_col_avg_dict = fill_nans_train(df_transformed)
@@ -229,12 +271,13 @@ class CleanClass():
 
     def transform(self, df):
         '''
-        This function would be written to
-        transform whatever form the data comes in as
-        It preps the data to be run through a
-        fit model for prediction
+        Written to take in data from the webapp
+        Takes in a dataframe, fills the nans,
+        creates dummy columns
         '''
-        pass
+        df = fill_nans_trans(df, self._ccqb_col_avg_dict)
+        df = create_transform_dummies(df, self._dummy_dict)
+        return df
 
 
 class CleanErs():
@@ -259,6 +302,7 @@ class CleanErs():
         self._ccqb_col_avg_dict = {}
         self._dummy_dict = {}
         self._scores_drop = ['Site Region', 'Assessment Phase Name', 'Date']
+        self.score_col_names = []
 
     def _clean_ers_ccqb(self, df_ers):
         '''
@@ -270,6 +314,7 @@ class CleanErs():
         self._dummy_dict = get_dummy_dict(df_ers, self._dummy_cols)
         df = drop_text_cols(df_ers, self._drop_cols)
         df = df.drop([2939, 2940, 2941, 2942, 2943, 2944, 2945])
+        self.score_col_names = create_score_col_names(df)
         df_to_avg, df_saved_cols = separate_df(df, self._sep_list)
         df_transformed = get_dates_at_thresh_and_mean(df_to_avg)
         df_no_nans, self._ccqb_col_avg_dict = fill_nans_train(df_transformed)
@@ -308,13 +353,15 @@ class CleanErs():
                                                  df_scores2,
                                                  clean_ccqb_df)
         df = combine_finished_dfs(clean_ccqb_df, clean_scores_df)
-        df = df.drop(np.nan, axis=1)
+        self.final_columns = df.drop('mean', axis=1).columns.values
         return df.drop('mean', axis=1), df['mean'].values
 
     def transform(self, df):
         '''
-        This function would be written to transform whatever
-        from the data comes in as
-        It preps the data to be run through a fit model for prediction
+        Written to take in data from the webapp
+        Takes in a dataframe, fills the nans,
+        creates dummy columns
         '''
-        pass
+        df = fill_nans_trans(df, self._ccqb_col_avg_dict)
+        df = create_transform_dummies(df, self._dummy_dict)
+        return df
