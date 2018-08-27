@@ -16,9 +16,9 @@ let get_predict = function(test_type) {
 };
 let display_prediction = function(prediction) {
     if (prediction.test_type == "ers") {
-        $("span#prediction_ers").html(prediction.prediction)
+        $("img#prediction_ers").attr('src', '/static/images/ers_graph.jpg')
     }
     else if (prediction.test_type == "class") {
-        $("span#prediction_class").html(prediction.prediction)
+        $("img#prediction_class").attr('src', '/static/images/class_graph.jpg')
     }
 };
