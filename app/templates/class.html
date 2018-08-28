@@ -81,36 +81,50 @@
               CLASS Score Entry</div>
             <div class="card-body">
               <form>
-                <fieldset>
+                <fieldset class="form-group">
                   <legend>Provider Information</legend>
-                  <label>Region</label>
-                  <select name="Provider: Region">
-                      <option value="King/Pierce County">King/Pierce County</option>
-                      <option value="Olympic Peninsula">Olympic Peninsula</option>
-                      <option value="Northwest Washington">Northwest Washington</option>
-                      <option value="Eastern Washington">Eastern Washington</option>
-                      <option value="Southwest Washington">Southwest Washington</option>
-                      <option value="Central Washington">Central Washington</option>
-                    </select> 
-                    <label>Date</label>
-                    <input type="date" name="Date" />
-                    <label>Record Type</label>
-                    <select name="Touchpoint: Record Type">
-                      <option value="QB - ERS FCCERS">FCCERS</option>
-                      <option value="QB - ERS ITERS">ITERS</option>
-                      <option value="QB - ERS ECERS">ECERS</option>
-                    </select>
-                    <label>Number of Children enrolled</label>
-                    <input type="text" name="Number of children enrolled">
-                    <label>Number of Children Present</label>
-                    <input type="text" name="Number of children present">
-                </fieldset>
-                <fieldset>
+                  <div class="row form-group">
+                    <div class="col">
+                      <label for="Provider: Region">Region</label>
+                      <select class="form-control" id="Provider: Region" name="Provider: Region">
+                          <option value="King/Pierce County">King/Pierce County</option>
+                          <option value="Olympic Peninsula">Olympic Peninsula</option>
+                          <option value="Northwest Washington">Northwest Washington</option>
+                          <option value="Eastern Washington">Eastern Washington</option>
+                          <option value="Southwest Washington">Southwest Washington</option>
+                          <option value="Central Washington">Central Washington</option>
+                        </select>
+                      </div>
+                      <div class="col">
+                        <label for="Date">Date</label>
+                        <input class="form-control" id="Date" type="date" name="Date" />
+                      </div>
+                      <div class="col">
+                        <label for="Touchpoint: Record Type">Record Type</label>
+                        <select class="form-control" id="Touchpoint: Record Type" name="Touchpoint: Record Type">
+                          <option value="QB - ERS ITERS">ITERS</option>
+                          <option value="QB - ERS ECERS">ECERS</option>
+                          <option value="QB - ERS FCCERS">FCCERS</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="form-row form-group">
+                      <div class="col">
+                        <label for="Number of children enrolled">Number of children enrolled</label>
+                        <input class="form-control" id="Number of children enrolled" type="text" name="Number of children enrolled">
+                      </div>
+                      <div class="col">
+                        <label for="Number of children present">Number of cildren Present</label>
+                        <input class="form-control" id="Number of children present" type="text" name="Number of children present">
+                      </div>
+                    </div>
+                  </fieldset>
+                <fieldset class="form-group">
                   <legend>Scores</legend>
                   {{value|safe}}
                 </fieldset>
               </form>
-              <button onclick="get_graph(0)">Submit</button>
+              <button class="btn btn-primary" onclick="get_graph(0)">Submit</button>
             </div>
           </div>
 
