@@ -12,10 +12,10 @@ let fake_predict = function(test_type) {
         success: function (data) {
             display_fake_prediction(data)
         }
-    });
+    });s
 };
 
-let display__fake_prediction = function(prediction) {
+let display_fake_prediction = function(prediction) {
     if (prediction.test_type == "ers") {
         $("img#prediction_ers").attr('src', '/static/images/demo/ers_graph.jpg')
     }
@@ -45,9 +45,9 @@ let get_graph = function(test_type) {
 
 let display_prediction = function(prediction) {
     if (prediction.test_type == "ers") {
-        $("img#prediction_ers").attr('src', '/static/images/ers_graph.jpg')
+        $("img#prediction_ers").attr('src', '/static/images/prediction-graphs/ers_graph.jpg')
     }
     else if (prediction.test_type == "class") {
-        $("img#prediction_class").attr('src', '/static/images/class_graph.jpg')
+        $("img#prediction_class").attr('src', '/static/images/prediction-graphs/class_graph.jpg')
     }
 };
