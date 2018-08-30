@@ -43,7 +43,6 @@ def predictfakeCLASS():
 def predictERS():
     df = create_df_from_form(request.json)
     df_cleaned = ers_transformer.transform(df)
-    df_cleaned.to_csv("test.csv")
     df_times = create_times(df_cleaned)
     predictions = ers_model.predict(df_times)
     create_graph(df_times['time_delta'].values, predictions, 'static/images/prediction-graphs/ers_graph.jpg')
@@ -103,7 +102,7 @@ def create_html(test_type):
 def create_df_from_form(json_form):
     to_be_df = {}
     for form_dict in json_form:
-        if 'Score' in form_dict['name'] or 'Number' in form_dict['name']:
+        if 'Score' in form_dict['name'] or 'Number' in form_dict['name'] or 'Observation Time' == form_dict['name']:
             if form_dict['value'] == '':
                 to_be_df[form_dict['name']] = np.nan
             else:
