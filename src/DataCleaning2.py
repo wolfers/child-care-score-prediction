@@ -314,7 +314,7 @@ class CleanClass():
         df_scores = df_scores.drop(self._scores_drop, axis=1)
         return df_scores
 
-    def fit_and_clean(self, df_ccqb, df_scores):
+    def fit_clean(self, df_ccqb, df_scores):
         '''
         Take in data as pandas DataFrames
         returns cleaned CCQB and official ratings DataFrames
@@ -396,7 +396,7 @@ class CleanErs():
         df_scores = df_scores.drop(self._scores_drop, axis=1)
         return df_scores
 
-    def fit_and_clean(self, df_ccqb, df_scores1, df_scores2):
+    def fit_clean(self, df_ccqb, df_scores1, df_scores2):
         '''
         Take in ERS data as pandas DataFrames
         returns cleaned CCQB and official ratings DataFrames
