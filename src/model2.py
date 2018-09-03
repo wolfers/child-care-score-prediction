@@ -3,6 +3,7 @@ import numpy as np
 import pickle
 from DataCleaning import CleanClass, CleanErs
 from sklearn.ensemble import RandomForestRegressor
+import ModelFunctions as mf
 
 if __name__ == "__main__":
     df_ers_ccqb = pd.read_excel('data/ers_ccqb.xlsx')
@@ -11,20 +12,18 @@ if __name__ == "__main__":
     df_class = pd.read_excel('data/class_ccqb.xlsx')
     df_class_scores = pd.read_excel('data/class_ratings_scores.xlsx', header=(0,1))
 
-    from DataCleaning import CleanErs, CleanClass
+    from DataCleaning2 import CleanErs, CleanClass
     ers_transformer = CleanErs()
     class_transformer = CleanClass()
 
     ers_ccqb_cleaned, ers_ratings_cleaned = ers_transformer.fit_clean(df_ers_ccqb, df_ers_scores1, df_ers_scores2)
-    ers_ccqb_cleaned, ers_ratings_cleaned = class_transformer.fit_clean(df_class, df_class_scores)
+    class_ccqb_cleaned, class_ratings_cleaned = class_transformer.fit_clean(df_class, df_class_scores)
 
-    forest_model_ers = RandomForestRegressor(n_estimators=1500, max_features="log2")
-    forest_model_class = RandomForestRegressor(n_estimators=1500, max_features="log2")
+    ers_set = mf.create_data_sets(ers_ccqb_cleaned, ers_ratings_cleaned)
+    class_set = mf.create_data_sets(class_ccqb_cleaned. class_ratings_cleaned)
 
-    forest_model_ers.fit(X_ers, y_ers)
-    forest_model_class.fit(X_class, y_class)
+    ers_models = mf.create_fit_models(ers_set)
+    class_models = mf.create_fit_models(class_set)
 
-    with open('data/ers_model.pkl', 'wb') as f:
-        pickle.dump(forest_model_ers, f)
-    with open('data/class_model.pkl', 'wb') as f:
-        pickle.dump(forest_model_class, f)
+    mf.pickle_models(ers_models, "ers")
+    mf.pickle_models(class_models, "class")

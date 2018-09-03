@@ -40,7 +40,7 @@ def create_fit_models(data_sets):
 def pickle_models(models_dict, test):
     '''
     creates a pickled model for each model in
-    models_dict. ALso creates a pickled list
+    models_dict. Also creates a pickled list
     containing the names of all the models
     '''
     if test == "ers":
