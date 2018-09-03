@@ -37,13 +37,13 @@ def create_fit_models(data_sets):
         models_dict[name] = forest_model
     return models_dict
 
-def pickle_models(models_dict, test):
+def pickle_models(models_dict, test_type):
     '''
     creates a pickled model for each model in
     models_dict. Also creates a pickled list
     containing the names of all the models
     '''
-    if test == "ers":
+    if test_type == "ers":
         path = "child-care-score-prediction/app/static/ers/"
     else:
         path = "child-care-score-prediction/app/static/class/"
@@ -60,7 +60,19 @@ def load_pickled_models(test_type):
     and return them in a diction where the keys are the names
     and the values are the models
     '''
-    pass
+    models_dict = {}
+    if test_type == "ers":
+        path = "child-care-score-prediction/app/static/ers/"
+    else:
+        path = "child-care-score-prediction/app/static/class/"
+    with open(path + "model_names.pkl", 'rb') as f:
+        names = pickle.load(f)
+    for name in names:
+        with open(path + name + '.pkl') as f:
+            model = pickle.load(f)
+            models_dict[name] = model
+    return models_dict
+
 
 def predict_scores(dict_models, ccqb):
     '''
@@ -78,19 +90,24 @@ def find_variance(dict_ratings, ccqb):
     take all of the ratings and find their varience from the original baseline.
     return a dict of the varience for each item.
     '''
-    pass
+    dict_variance = {}
+    for name, predicted_rating in dict_ratings.items():
+        dict_variance[name] = predicted_rating - ccqb[name].values
+    return dict_variance
 
 def determine_top_changes(dict_variance, n=10):
     '''
     find the top n variances for the ratings and return them.
+    only valid for ers data
     '''
-    pass
+    top_five = dict(sorted(dict_variance, key=dict_variance.get, reverse=True)[:5])
+    return top_five
 
-def process_ccqb(ccqb):
+def process_ccqb(dict_models, ccqb):
     '''
     get results for an inputted ccqb
     '''
-    dict_ratings = predict_scores(ccqb)
+    dict_ratings = predict_scores(dict_models, ccqb)
     dict_variance = find_variance(dict_ratings, ccqb)
     dict_top = determine_top_changes(dict_variance, n=10)
     return dict_top

@@ -20,7 +20,7 @@ if __name__ == "__main__":
     class_ccqb_cleaned, class_ratings_cleaned = class_transformer.fit_clean(df_class, df_class_scores)
 
     ers_set = mf.create_data_sets(ers_ccqb_cleaned, ers_ratings_cleaned)
-    class_set = mf.create_data_sets(class_ccqb_cleaned. class_ratings_cleaned)
+    class_set = mf.create_data_sets(class_ccqb_cleaned, class_ratings_cleaned)
 
     ers_models = mf.create_fit_models(ers_set)
     class_models = mf.create_fit_models(class_set)
