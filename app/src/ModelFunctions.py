@@ -103,8 +103,11 @@ def determine_top_changes(dict_variance, n=10):
     find the top n variances for the ratings and return them.
     only valid for ers data
     '''
+    top_five_with_vals = []
     top_five = sorted(dict_variance, key=dict_variance.get, reverse=True)[:5]
-    return top_five
+    for name in top_five:
+        top_five_with_vals.append("  " + name[:-5] + "variance:  " + str(dict_variance[name][0]))
+    return top_five_with_vals
 
 def process_ccqb(dict_models, ccqb):
     '''

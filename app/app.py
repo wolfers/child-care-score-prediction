@@ -31,18 +31,20 @@ def class_page():
 def predictERS():
     df = create_df_from_form(request.json)
     df_cleaned = ers_transformer.transform(df)
-    top_five_list = mf.process_ccqb(models_ers, df_cleaned)
+    top_list = mf.process_ccqb(models_ers, df_cleaned)
+#   top_html = create_top_html(top_list)
     print("sent JSON")
-    return jsonify({"top": top_five_list, "test_type": "ers"})
+    return jsonify({"test_type": "ers", "top": top_list})
 
 
 @app.route('/predictCLASS', methods=["post"])
 def predictCLASS():
     df = create_df_from_form(request.json)
     df_cleaned = class_transformer.transform(df)
-    top_five_list = mf.process_ccqb(models_class, df_cleaned)
+    top_list = mf.process_ccqb(models_class, df_cleaned)
+#    top_html = create_top_html(top_list)
     print("sent JSON")
-    return jsonify({"top": top_five_list, "test_type": "class"})
+    return jsonify({"test_type": "ers", "top": top_list})
 
 
 @app.errorhandler(404)
@@ -81,6 +83,18 @@ def create_df_from_form(json_form):
         else:
             to_be_df[form_dict['name']] = form_dict['value']
     return pd.DataFrame(to_be_df, index=[0])
+
+
+def create_top_html(top_list):
+    '''
+    Does not work with jquery like I had hoped.
+    A project for later
+    '''
+    html = ""
+    html_empty = "<p>{0}</p>"
+    for top in top_list:
+        html += html_empty.format(top)
+    return html
 
 
 if __name__ == '__main__':
