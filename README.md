@@ -53,8 +53,13 @@ The model is difficult to test, as it's only predicting areas to focus on for pr
 ### TO DO
 
 website information
+
 furute plans
+
 things to do better
+
 add link to slides
+
 create README for testing directiory(it's old stuff)
+
 create README in app directory
