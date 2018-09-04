@@ -24,7 +24,7 @@ let display_fake_prediction = function(prediction) {
     }
 };
 
-let get_graph = function(test_type) {
+let get_top = function(test_type) {
     if (test_type == 1) {
         var url = '/predictERS'
     }
@@ -45,9 +45,9 @@ let get_graph = function(test_type) {
 
 let display_prediction = function(prediction) {
     if (prediction.test_type == "ers") {
-        $("img#prediction_ers").attr('src', '/static/images/prediction-graphs/ers_graph.jpg')
+        $("#prediction_ers").text(prediction.top)
     }
     else if (prediction.test_type == "class") {
-        $("img#prediction_class").attr('src', '/static/images/prediction-graphs/class_graph.jpg')
+        $("#prediction_class").text(prediction.top)
     }
 };

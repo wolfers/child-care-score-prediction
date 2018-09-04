@@ -87,37 +87,29 @@
                     <div class="col">
                       <label for="Provider: Region">Region</label>
                       <select class="form-control" id="Provider: Region" name="Provider: Region">
-                          <option value="King/Pierce County">King/Pierce County</option>
-                          <option value="Olympic Peninsula">Olympic Peninsula</option>
-                          <option value="Northwest Washington">Northwest Washington</option>
-                          <option value="Eastern Washington">Eastern Washington</option>
-                          <option value="Southwest Washington">Southwest Washington</option>
-                          <option value="Central Washington">Central Washington</option>
+                          <option value="Provider: Region_King/Pierce County">King/Pierce County</option>
+                          <option value="Provider: Region_Olympic Peninsula">Olympic Peninsula</option>
+                          <option value="Provider: Region_Northwest Washington">Northwest Washington</option>
+                          <option value='Provider: Region_Eastern Washington'>Eastern Washington</option>
+                          <option value="Provider: Region_Southwest Washington">Southwest Washington</option>
+                          <option value='Provider: Region_Central Washington'>Central Washington</option>
                         </select>
-                      </div>
-                      <div class="col">
-                        <label for="Date">Date</label>
-                        <input class="form-control" id="Date" type="date" name="Date" />
                       </div>
                       <div class="col">
                         <label for="Touchpoint: Record Type">Record Type</label>
                         <select class="form-control" id="Touchpoint: Record Type" name="Touchpoint: Record Type">
-                          <option value="QB - ERS ITERS">ITERS</option>
-                          <option value="QB - ERS ECERS">ECERS</option>
-                          <option value="QB - ERS FCCERS">FCCERS</option>
+                          <option value="Touchpoint: Record Type_QB - CLASS Combined">Combined</option>
+                          <option value="Touchpoint: Record Type_QB - CLASS PreK">PreK</option>
+                          <option value="Touchpoint: Record Type_QB - CLASS Toddler">Toddler</option>
                         </select>
                       </div>
                     </div>
                     <div class="form-row form-group">
                       <div class="col">
-                        <label for="Observation Time">Observation Time</label>
-                        <input class="form-control" id="Observation Time" type="text" name="Observation Time">
-                      </div>
-                      <div class="col">
                         <label for="Provider: Type of Care">Type of Care</label>
                         <select class="form-control" id="Provider: Type of Care" name="Provider: Type of Care">
-                          <option value="Family Child Care">Family Child Care</option>
-                          <option value="Child Care Center">Child Care Center</option>
+                          <option value="Provider: Type of Care_Family Child Care">Family Child Care</option>
+                          <option value="Provider: Type of Care_Child Care Center">Child Care Center</option>
                         </select>
                       </div>
                     </div>
@@ -127,7 +119,7 @@
                   {{value|safe}}
                 </fieldset>
               </form>
-              <button class="btn btn-primary" onclick="get_graph(0)">Submit</button>
+              <button class="btn btn-primary" onclick="get_top(0)">Submit</button>
             </div>
           </div>
 
@@ -141,9 +133,9 @@
           <div class="card mb-3">
             <div class="card-header">
               <i class="fas fa-chart-area"></i>
-              CLASS Score Graph</div>
+              CLASS Top 5 improvements</div>
             <div class="card-body">
-                <img class="predictGraph" id="prediction_class" src=''>
+                <p id="prediction_class"></p>
             </div>
           </div>
 
