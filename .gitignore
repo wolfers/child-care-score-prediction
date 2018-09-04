@@ -1,1 +1,3 @@
 *.pkl
+app/src/data/
+__pycache__
