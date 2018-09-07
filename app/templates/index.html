@@ -46,7 +46,7 @@
         <li class="nav-item active">
           <a class="nav-link" href="/">
             <i class="fas fa-fw fa-tachometer-alt"></i>
-            <span>Fake Data Demo</span>
+            <span>Index</span>
           </a>
         </li>
         <li class="nav-item active">
@@ -72,57 +72,27 @@
             <li class="breadcrumb-item">
               <a href="#">Dashboard</a>
             </li>
-            <li class="breadcrumb-item active">Fake Data Demo</li>
+            <li class="breadcrumb-item active">Proof of Concept dashboard</li>
           </ol>
           <div class="row">
-              <div class="col-xl-3 col-sm-6 mb-3">
-                  <div class="card text-white bg-primary o-hidden h-100">
-                    <div class="card-body">
-                      <div class="card-body-icon">
-                        <i class="fas fa-fw fa-comments"></i>
-                      </div>
-                      <div class="mr-5">CLASS score prediction</div>
-                    </div>
-                    <a class="card-footer text-white clearfix small z-1" onclick="fake_predict(2)">
-                      <span class="float-left">Show Score Graph</span>
-                      <span class="float-right">
-                        <i class="fas fa-angle-right"></i>
-                      </span>
-                    </a>
-                  </div>
-              </div>
-              <div class="col-xl-3 col-sm-6 mb-3">
-                  <div class="card text-white bg-warning o-hidden h-100">
-                    <div class="card-body">
-                      <div class="card-body-icon">
-                        <i class="fas fa-fw fa-list"></i>
-                      </div>
-                      <div class="mr-5">ERS score prediction</div>
-                    </div>
-                    <a class="card-footer text-white clearfix small z-1" onclick="fake_predict(1)">
-                      <span class="float-left">Show Score Graph</span>
-                      <span class="float-right">
-                        <i class="fas fa-angle-right"></i>
-                      </span>
-                    </a>
-                  </div>
-                </div>
+              
           </div>
           <!-- Area Chart Example-->
           <div class="card mb-3">
             <div class="card-header">
               <i class="fas fa-chart-area"></i>
-              CLASS score graph</div>
+              Example Dashboard</div>
             <div class="card-body">
-              <img class="predictGraph" id="prediction_class" src=''>
+                <p>This is a proof of concept dashboard.
+                    The different tests are labelled on the left side.
+                  </p>
+                <p>
+                  Enter in the ccqb data for the specific test and get a list of things that are likely to improve for the provider.
+                </p>
+                <p>
+                  The number next to each category indicates the difference between the baseline and the predicted rating.
+                </p>
             </div>
-            <div class="card mb-3">
-                <div class="card-header">
-                  <i class="fas fa-chart-area"></i>
-                  ERS score graph</div>
-                <div class="card-body">
-                  <img class="predictGraph" id="prediction_ers" src=''>
-                </div>
         </div>
         </div>
         <!-- /.container-fluid -->
