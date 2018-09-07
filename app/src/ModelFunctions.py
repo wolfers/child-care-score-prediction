@@ -106,7 +106,7 @@ def determine_top_changes(dict_variance, n=10):
     top_five_with_vals = []
     top_five = sorted(dict_variance, key=dict_variance.get, reverse=True)[:5]
     for name in top_five:
-        top_five_with_vals.append("  " + name[:-5] + "variance:  " + str(dict_variance[name][0]))
+        top_five_with_vals.append("  " + name[:-5] + "difference:  " + str(dict_variance[name][0]))
     return top_five_with_vals
 
 def process_ccqb(dict_models, ccqb):

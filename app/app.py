@@ -1,6 +1,5 @@
 from flask import Flask, request, render_template, jsonify
 from sklearn.ensemble import RandomForestRegressor
-import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import pickle
@@ -33,7 +32,6 @@ def predictERS():
     df_cleaned = ers_transformer.transform(df)
     top_list = mf.process_ccqb(models_ers, df_cleaned)
 #   top_html = create_top_html(top_list)
-    print("sent JSON")
     return jsonify({"test_type": "ers", "top": top_list})
 
 
@@ -43,8 +41,7 @@ def predictCLASS():
     df_cleaned = class_transformer.transform(df)
     top_list = mf.process_ccqb(models_class, df_cleaned)
 #    top_html = create_top_html(top_list)
-    print("sent JSON")
-    return jsonify({"test_type": "ers", "top": top_list})
+    return jsonify({"test_type": "class", "top": top_list})
 
 
 @app.errorhandler(404)
