@@ -2,7 +2,7 @@
 
 #### The data used for this model is confidential. Any data provided in this repo or used as examples is all fake data and does not reflect the actual data.
 
-Included in this repo are the sldies used for presenting this project.
+[Included in this repo are the sldies used for presenting this project.](./slides.pdf)
 
 ## Child Care Aware Washington background info
 
