@@ -12,6 +12,22 @@ There are two different tests, CLASS and ERS. Each measure different things. In 
 
 This project set out to create a model that predicts individual score for the official ratings based on the ccqb and then emasure the variance between baseline and predicted. It then recommends some areas that have high variance as a suggestion for providers to focus efforts in those areas.
 
+## Sample dashboard using fake data
+
+I created a sample dashboard that takes in the CCQB data and outputs a list for predictions.
+
+The landing page explains a tiny bit about the website.
+![Dashboard Landing Page](./images/index.png "Dashboard Landing Page")
+
+There are two apges, one for CLASS and one for ERS
+![CLASS page](./images/CLASS.png "CLASS Page")
+![ERS Page](./images/ERS.png "ERS Page")
+
+This is a sample using some random data. The text at the bottom is the list of skills. It is not very well formatted but it contains all of the infomration. This specific example is of the ERS page, but the CLASS page works in the same way. 
+![ERS Demo](./images/ERS_demo.png "ERS Demo")
+
+The website is not hosted anywhere but this repo contains everything needed to run the site other than the pickled models and transformers. They were too large to fit into the github repo. I may add some fake csv data that can be used to train some models and test out all the functions of the dashbaord.
+
 ## EDA and feature engineering
 
 #### initial information
@@ -45,6 +61,8 @@ There were a few models I attempted to try, I tested Ridge regression, Gradiant 
 For testing I did a lot of cross validation. Wtih the parameters I settled on the models were getting around 1-4 mean squared error. A few of them had around 8, but for the most part they were in the smaller range.
 
 Overall there were 40 models for the ERS data and 4 models for the CLASS data.
+
+In cross validation I tested all the models on the same parameters and chose the best for the group as a whole. It would likely be more effective to train tune the models seperatly and find the best hyperparameters for each model. I didn't have the time to run this when I was at the modeling stage though.
 
 ## performance
 
