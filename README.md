@@ -2,6 +2,8 @@
 
 #### The data used for this model is confidential. Any data provided in this repo or used as examples is all fake data and does not reflect the actual data.
 
+Included in this repo are the sldies used for presenting this project.
+
 ## Child Care Aware Washington background info
 
 Child Care Aware provided me confidential data for provider CCQB(baseline) ratings, and their official ratings. Child Care Aware Washington sends out a representative to give a provider a baseline rating and advice on how to proceed. Then an official rater from University of Washington goes ut and gives the provider their official rating.
@@ -67,17 +69,3 @@ In cross validation I tested all the models on the same parameters and chose the
 ## performance
 
 The model is difficult to test, as it's only predicting areas to focus on for providers.
-
-### TO DO
-
-website information
-
-furute plans
-
-things to do better
-
-add link to slides
-
-create README for testing directiory(it's old stuff)
-
-create README in app directory
